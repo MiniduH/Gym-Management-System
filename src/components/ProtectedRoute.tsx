@@ -24,7 +24,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     }
 
     // If role is required and user doesn't have it, redirect to dashboard
-    if (requiredRole && user?.role !== requiredRole) {
+    if (requiredRole && user?.role?.toString().toLowerCase() !== requiredRole.toLowerCase()) {
       router.replace('/dashboard');
       return;
     }
@@ -36,7 +36,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   }
 
   // If role is required and user doesn't have it, show nothing
-  if (requiredRole && user?.role !== requiredRole) {
+  if (requiredRole && user?.role?.toString().toLowerCase() !== requiredRole.toLowerCase()) {
     return null;
   }
 

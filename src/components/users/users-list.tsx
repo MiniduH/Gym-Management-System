@@ -169,7 +169,7 @@ export function UsersList() {
             username: userData.username,
             phone: userData.phone,
             department: userData.department,
-            role: typeof userData.role === 'number' ? userData.role : parseInt(String(userData.role)),
+            type: userData.role === 'USER' ? 'user' : userData.role === 'ADMIN' ? 'admin' : userData.role === 'TRAINEE' ? 'trainer' : 'user',
           },
         }).unwrap();
       } else {
@@ -184,7 +184,7 @@ export function UsersList() {
           password: userData.password || '',
           phone: userData.phone,
           department: userData.department,
-          role: typeof userData.role === 'number' ? userData.role : parseInt(String(userData.role)),
+          type: userData.role === 'USER' ? 'user' : userData.role === 'ADMIN' ? 'admin' : userData.role === 'TRAINEE' ? 'trainer' : 'user',
         }).unwrap();
       }
       setIsFormOpen(false);

@@ -11,7 +11,7 @@ export interface User {
   username: string;
   email: string;
   phone?: string;
-  role: number | string;
+  role: string; // Now returns string values: 'user', 'admin', 'trainer'
   status: string;
   department?: string;
   is_verified: boolean;
@@ -48,7 +48,7 @@ export interface CreateUserRequest {
   email: string;
   password: string;
   phone?: string;
-  role?: number;
+  type: 'user' | 'admin' | 'trainer'; // Changed from role to type with string values
   department?: string;
 }
 
@@ -62,7 +62,7 @@ export interface UpdateUserRequest {
   last_name?: string;
   username?: string;
   phone?: string;
-  role?: number;
+  type?: 'user' | 'admin' | 'trainer'; // Changed from role to type
   status?: 'active' | 'inactive' | 'suspended';
   department?: string;
 }
@@ -130,7 +130,7 @@ export const userApi = createApi({
     // Get users by role
     getUsersByRole: builder.query<
       { success: boolean; data: User[] },
-      'user' | 'moderator' | 'admin'
+      'user' | 'admin' | 'trainer'
     >({
       query: (role) => `/users/role/${role}`,
       providesTags: ['User'],

@@ -45,14 +45,19 @@ export default function LoginPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
 
-  // Redirect to dashboard if already authenticated
+  // Redirect to appropriate dashboard if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      router.replace('/dashboard');
+    if (isAuthenticated && user) {
+      const userRole = user.role?.toString().toLowerCase();
+      if (userRole === 'admin') {
+        router.replace('/dashboard/admin');
+      } else {
+        router.replace('/dashboard');
+      }
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -79,8 +84,13 @@ export default function LoginPage() {
           tokens: response.data.tokens,
         }));
         
-        // Redirect to dashboard
-        router.push('/dashboard');
+        // Redirect based on user role
+        const userRole = response.data.user.role?.toString().toLowerCase();
+        if (userRole === 'admin') {
+          router.push('/dashboard/admin');
+        } else {
+          router.push('/dashboard');
+        }
       } else {
         setError(response.message || 'Login failed. Please try again.');
       }

@@ -14,42 +14,45 @@ import {
   Printer,
   GitBranch,
   ClipboardCheck,
+  Shield,
+  Cog,
+  UserCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/store/features/authSlice';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import LogoLg from '@/assets/logo-2.png';
 import LogoSm from '@/assets/logo-1.png';
+import { RootState } from '@/store';
 
-
-const menuItems = [
+const adminMenuItems = [
   {
     title: 'Dashboard',
     icon: LayoutDashboard,
-    href: '/dashboard',
+    href: '/dashboard/admin',
   },
   {
-    title: 'Tickets',
-    icon: FileText,
-    href: '/dashboard/tickets',
+    title: 'Users',
+    icon: Users,
+    href: '/dashboard/admin/users',
   },
   {
-    title: 'Reprint Requests',
-    icon: Printer,
-    href: '/dashboard/reprint-requests',
+    title: 'Trainers',
+    icon: UserCheck,
+    href: '/dashboard/admin/trainees',
+  },
+  {
+    title: 'Settings',
+    icon: Cog,
+    href: '/dashboard/admin/settings',
   },
   {
     title: 'Workflows',
     icon: GitBranch,
     href: '/dashboard/workflows',
-  },
-  {
-    title: 'User Management',
-    icon: Users,
-    href: '/dashboard/users',
   },
 ];
 
@@ -59,6 +62,10 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  // Determine menu items based on user role
+  const menuItems = user?.role === 'admin' || user?.role === 'ADMIN' ? adminMenuItems : [];
 
   // Close mobile menu on route change
   useEffect(() => {
