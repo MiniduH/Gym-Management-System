@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { userApi } from '@/store/services/userApi';
+import { userApi, User as ApiUser } from '@/store/services/userApi';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -42,6 +42,7 @@ import {
   Pencil,
   Trash2,
   Eye,
+  EyeOff,
   UserCheck,
   UserX,
   Mail,
@@ -88,20 +89,51 @@ export default function AdminAdminsPage() {
     password: '',
     phone: '',
     department: '',
+    address: {
+      line1: '',
+      line2: '',
+      province: '',
+      district: '',
+    },
   });
-  const [autoGeneratePassword, setAutoGeneratePassword] = useState(true);
+  const [autoGeneratePassword, setAutoGeneratePassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // API hooks
   const { data: usersData, isLoading } = userApi.useGetUsersQuery({
     limit: 100,
     offset: 0,
   });
+  const { data: provincesData } = userApi.useGetProvincesQuery({});
   const [createUser] = userApi.useCreateUserMutation();
+  const [deleteUser] = userApi.useDeleteUserMutation();
+
+  // Reset form when drawer opens
+  useEffect(() => {
+    if (isCreateDrawerOpen) {
+      setCreateFormData({
+        first_name: '',
+        last_name: '',
+        email: '',
+        password: '',
+        phone: '',
+        department: '',
+        address: {
+          line1: '',
+          line2: '',
+          province: '',
+          district: '',
+        },
+      });
+      setAutoGeneratePassword(false);
+      setShowPassword(false);
+    }
+  }, [isCreateDrawerOpen]);
 
   // Populate users from API
   useEffect(() => {
     if (usersData?.data) {
-      const mappedUsers = usersData.data.map((user) => ({
+      const mappedUsers = usersData.data.map((user: any) => ({
         id: user.id,
         first_name: user.first_name,
         last_name: user.last_name,
@@ -190,7 +222,15 @@ export default function AdminAdminsPage() {
 
   // Create user form handlers
   const handleCreateFormChange = (field: string, value: string) => {
-    setCreateFormData(prev => ({ ...prev, [field]: value }));
+    if (field.startsWith('address.')) {
+      const addressField = field.split('.')[1];
+      setCreateFormData(prev => ({
+        ...prev,
+        address: { ...prev.address, [addressField]: value }
+      }));
+    } else {
+      setCreateFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const generatePassword = () => {
@@ -202,10 +242,20 @@ export default function AdminAdminsPage() {
     return password;
   };
 
+  // Auto-generate password when checkbox is toggled on
+  useEffect(() => {
+    if (autoGeneratePassword) {
+      const newPassword = generatePassword();
+      setCreateFormData(prev => ({ ...prev, password: newPassword }));
+    } else {
+      setCreateFormData(prev => ({ ...prev, password: '' }));
+    }
+  }, [autoGeneratePassword]);
+
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!createFormData.first_name || !createFormData.last_name || !createFormData.email) {
+    if (!createFormData.first_name || !createFormData.last_name || !createFormData.phone) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -214,33 +264,34 @@ export default function AdminAdminsPage() {
 
     try {
       const password = autoGeneratePassword ? generatePassword() : createFormData.password;
-      const username = createFormData.email.split('@')[0] + Math.random().toString(36).substring(2, 8);
+      const username = (createFormData.email || createFormData.first_name.toLowerCase()) + Math.random().toString(36).substring(2, 8);
 
-      await createUser({
+      const response = await createUser({
         first_name: createFormData.first_name,
         last_name: createFormData.last_name,
         username,
-        email: createFormData.email,
+        email: createFormData.email || undefined,
         password,
-        phone: createFormData.phone || undefined,
+        phone: createFormData.phone,
         department: createFormData.department || undefined,
-        type: 'admin', // Changed from role: 2 to type: 'admin'
+        address: createFormData.address.line1 || createFormData.address.line2 || createFormData.address.province || createFormData.address.district ? createFormData.address : undefined,
+        type: 'admin',
       }).unwrap();
 
-      // Create user data for QR card
+      // Use the real user data from API response
       const newUserData: User = {
-        id: Date.now(), // Temporary ID until we get it from API
-        first_name: createFormData.first_name,
-        last_name: createFormData.last_name,
-        username,
-        email: createFormData.email,
-        role: 'ADMIN',
-        status: 'APPROVED',
-        phone: createFormData.phone || undefined,
-        department: createFormData.department || undefined,
-        is_verified: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        id: response.data.id,
+        first_name: response.data.first_name,
+        last_name: response.data.last_name,
+        username: response.data.username,
+        email: response.data.email,
+        role: String(response.data.role).toUpperCase(),
+        status: response.data.status.toUpperCase(),
+        phone: response.data.phone,
+        department: response.data.department,
+        is_verified: response.data.is_verified,
+        created_at: response.data.created_at,
+        updated_at: response.data.updated_at,
       };
 
       setCreatedUserData(newUserData);
@@ -263,6 +314,12 @@ export default function AdminAdminsPage() {
         password: '',
         phone: '',
         department: '',
+        address: {
+          line1: '',
+          line2: '',
+          province: '',
+          district: '',
+        },
       });
       setIsCreateDrawerOpen(false);
 
@@ -272,6 +329,20 @@ export default function AdminAdminsPage() {
       toast.error(error?.data?.message || 'Failed to create admin');
     } finally {
       setIsCreatingUser(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: number, userName: string) => {
+    if (!confirm(`Are you sure you want to permanently delete admin ${userName}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await deleteUser(userId).unwrap();
+      toast.success('Admin deleted successfully');
+    } catch (error: any) {
+      console.error('Error deleting admin:', error);
+      toast.error(error?.data?.message || 'Failed to delete admin');
     }
   };
 
@@ -293,7 +364,7 @@ export default function AdminAdminsPage() {
               Create Admin
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-full sm:max-w-lg">
+          <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
             <SheetHeader>
               <SheetTitle>Create New Admin</SheetTitle>
               <SheetDescription>
@@ -326,28 +397,96 @@ export default function AdminAdminsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="create_email">Email Address *</Label>
+                  <Label htmlFor="create_email">Email Address</Label>
                   <Input
                     id="create_email"
                     type="email"
                     value={createFormData.email}
                     onChange={(e) => handleCreateFormChange('email', e.target.value)}
-                    placeholder="Enter email address"
-                    required
+                    placeholder="Enter email address (optional)"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="create_phone">Phone Number</Label>
+                  <Label htmlFor="create_phone">Phone Number *</Label>
                   <Input
                     id="create_phone"
                     value={createFormData.phone}
                     onChange={(e) => handleCreateFormChange('phone', e.target.value)}
                     placeholder="Enter phone number"
+                    required
                   />
                 </div>
 
-                <div className="space-y-2">
+                {/* Address Fields */}
+                <div className="space-y-4">
+                  <Label>Address</Label>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="create_address_line1">Line 1</Label>
+                    <Input
+                      id="create_address_line1"
+                      value={createFormData.address.line1}
+                      onChange={(e) => handleCreateFormChange('address.line1', e.target.value)}
+                      placeholder="Street address"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="create_address_line2">Line 2</Label>
+                    <Input
+                      id="create_address_line2"
+                      value={createFormData.address.line2}
+                      onChange={(e) => handleCreateFormChange('address.line2', e.target.value)}
+                      placeholder="Apartment, suite, etc."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="create_province">Province</Label>
+                      <Select
+                        value={createFormData.address.province}
+                        onValueChange={(value) => handleCreateFormChange('address.province', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select province" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {provincesData?.data?.map((province: any) => (
+                            <SelectItem key={province.id} value={province.province_name}>
+                              {province.province_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="create_district">District</Label>
+                      <Select
+                        value={createFormData.address.district}
+                        onValueChange={(value) => handleCreateFormChange('address.district', value)}
+                        disabled={!createFormData.address.province}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select district" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {provincesData?.data
+                            ?.find((province: any) => province.province_name === createFormData.address.province)
+                            ?.districts.map((district: any) => (
+                              <SelectItem key={district.id} value={district.district_name}>
+                                {district.district_name}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* <div className="space-y-2">
                   <Label htmlFor="create_department">Department</Label>
                   <Input
                     id="create_department"
@@ -355,7 +494,7 @@ export default function AdminAdminsPage() {
                     onChange={(e) => handleCreateFormChange('department', e.target.value)}
                     placeholder="Enter department"
                   />
-                </div>
+                </div> */}
 
                 <div className="space-y-4">
                   <div className="flex items-center space-x-2">
@@ -367,19 +506,39 @@ export default function AdminAdminsPage() {
                     <Label htmlFor="autoGenerate">Auto-generate password</Label>
                   </div>
 
-                  {!autoGeneratePassword && (
-                    <div className="space-y-2">
-                      <Label htmlFor="create_password">Password *</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="create_password">Password *</Label>
+                    <div className="relative">
                       <Input
                         id="create_password"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         value={createFormData.password}
                         onChange={(e) => handleCreateFormChange('password', e.target.value)}
-                        placeholder="Enter password"
-                        required={!autoGeneratePassword}
+                        placeholder={autoGeneratePassword ? "Auto-generated password" : "Enter password"}
+                        required
+                        disabled={autoGeneratePassword}
+                        className={autoGeneratePassword ? "pr-10 bg-slate-50" : "pr-10"}
                       />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-slate-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-slate-400" />
+                        )}
+                      </Button>
                     </div>
-                  )}
+                    {autoGeneratePassword && (
+                      <p className="text-xs text-slate-500">
+                        Password will be automatically generated and displayed above
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 pt-4">
@@ -524,7 +683,16 @@ export default function AdminAdminsPage() {
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600 focus:text-red-600">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/admin/admins/${user.id}?edit=true`}>
+                              <Pencil className="w-4 h-4 mr-2" />
+                              Edit Admin
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="text-red-600 focus:text-red-600"
+                            onClick={() => handleDeleteUser(user.id, `${user.first_name} ${user.last_name}`)}
+                          >
                             <Trash2 className="w-4 h-4 mr-2" />
                             Delete Admin
                           </DropdownMenuItem>
@@ -676,7 +844,16 @@ export default function AdminAdminsPage() {
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-600 focus:text-red-600">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/dashboard/admin/admins/${user.id}?edit=true`}>
+                                  <Pencil className="w-4 h-4 mr-2" />
+                                  Edit Admin
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="text-red-600 focus:text-red-600"
+                                onClick={() => handleDeleteUser(user.id, `${user.first_name} ${user.last_name}`)}
+                              >
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Delete Admin
                               </DropdownMenuItem>

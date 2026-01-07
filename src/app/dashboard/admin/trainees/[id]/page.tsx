@@ -34,6 +34,7 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
+  Dumbbell,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -60,7 +61,7 @@ interface UserDetail {
   updated_at: string;
 }
 
-export default function UserDetailPage() {
+export default function TraineeDetailPage() {
   const params = useParams();
   const router = useRouter();
   const userId = params.id as string;
@@ -232,17 +233,17 @@ export default function UserDetailPage() {
   const handleDeleteUser = async () => {
     if (!user) return;
 
-    if (!confirm('Are you sure you want to permanently delete this user? This action cannot be undone.')) {
+    if (!confirm('Are you sure you want to permanently delete this trainee? This action cannot be undone.')) {
       return;
     }
 
     try {
       await deleteUser(user.id).unwrap();
-      toast.success('User deleted successfully');
-      router.push('/dashboard/admin/users');
+      toast.success('Trainee deleted successfully');
+      router.push('/dashboard/admin/trainees');
     } catch (error: any) {
-      console.error('Error deleting user:', error);
-      toast.error(error?.data?.message || 'Failed to delete user');
+      console.error('Error deleting trainee:', error);
+      toast.error(error?.data?.message || 'Failed to delete trainee');
     }
   };
 
@@ -251,7 +252,7 @@ export default function UserDetailPage() {
 
     try {
       // Here you would call the reset password API
-      toast.success('Password reset email sent to user');
+      toast.success('Password reset email sent to trainee');
     } catch (error) {
       toast.error('Failed to reset password');
     }
@@ -285,25 +286,14 @@ export default function UserDetailPage() {
     setIsProcessing(true);
 
     try {
-      const updateData: any = {
-        first_name: editFormData.first_name,
-        last_name: editFormData.last_name,
-        phone: editFormData.phone || undefined,
-      };
-
-      // Only include address if it has content
-      if (editFormData.address.line1 || editFormData.address.district || editFormData.address.province) {
-        updateData.address = {
-          line1: editFormData.address.line1,
-          line2: editFormData.address.line2 || undefined,
-          district: editFormData.address.district,
-          province: editFormData.address.province,
-        };
-      }
-
       await updateUser({
         userId: user.id,
-        data: updateData,
+        data: {
+          first_name: editFormData.first_name,
+          last_name: editFormData.last_name,
+          phone: editFormData.phone || undefined,
+          address: editFormData.address.line1 ? editFormData.address : undefined,
+        }
       }).unwrap();
 
       // Update local user state
@@ -312,14 +302,14 @@ export default function UserDetailPage() {
         first_name: editFormData.first_name,
         last_name: editFormData.last_name,
         phone: editFormData.phone,
-        address: editFormData.address.line1 ? editFormData.address : undefined,
+        address: editFormData.address.line1 ? editFormData.address : prev.address,
       } : null);
 
       setIsEditMode(false);
-      toast.success('User updated successfully');
+      toast.success('Trainee updated successfully');
     } catch (error: any) {
-      console.error('Error updating user:', error);
-      toast.error(error?.data?.message || 'Failed to update user');
+      console.error('Error updating trainee:', error);
+      toast.error(error?.data?.message || 'Failed to update trainee');
     } finally {
       setIsProcessing(false);
     }
@@ -359,9 +349,9 @@ export default function UserDetailPage() {
   if (!user) {
     return (
       <div className="text-center py-12">
-        <p className="text-slate-500 dark:text-slate-400">User not found</p>
-        <Link href="/dashboard/admin/users">
-          <Button className="mt-4">Back to Users</Button>
+        <p className="text-slate-500 dark:text-slate-400">Trainee not found</p>
+        <Link href="/dashboard/admin/trainees">
+          <Button className="mt-4">Back to Trainees</Button>
         </Link>
       </div>
     );
@@ -370,17 +360,17 @@ export default function UserDetailPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/admin/users">
+        <Link href="/dashboard/admin/trainees">
           <Button variant="outline" size="icon">
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </Link>
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-            {isEditMode ? 'Edit User' : `${user.first_name} ${user.last_name}`}
+            {isEditMode ? 'Edit Trainee' : `${user.first_name} ${user.last_name}`}
           </h1>
           <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1">
-            {isEditMode ? 'Update user information' : 'User Details & Management'}
+            {isEditMode ? 'Update trainee information' : 'Trainee Details & Management'}
           </p>
         </div>
       </div>
@@ -391,7 +381,7 @@ export default function UserDetailPage() {
           {isEditMode ? (
             <Card>
               <CardHeader>
-                <CardTitle>Edit User Information</CardTitle>
+                <CardTitle>Edit Trainee Information</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleEditSubmit} className="space-y-6">
@@ -419,18 +409,19 @@ export default function UserDetailPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="edit_phone">Phone Number</Label>
+                    <Label htmlFor="edit_phone">Phone Number *</Label>
                     <Input
                       id="edit_phone"
                       value={editFormData.phone}
                       onChange={(e) => handleEditFormChange('phone', e.target.value)}
                       placeholder="Enter phone number"
+                      required
                     />
                   </div>
 
                   {/* Address Fields */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Address</h3>
+                    <h4 className="text-sm font-medium text-slate-900 dark:text-white">Address Information</h4>
                     
                     <div className="space-y-2">
                       <Label htmlFor="edit_address_line1">Address Line 1</Label>
@@ -443,18 +434,18 @@ export default function UserDetailPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="edit_address_line2">Address Line 2 (Optional)</Label>
+                      <Label htmlFor="edit_address_line2">Address Line 2</Label>
                       <Input
                         id="edit_address_line2"
                         value={editFormData.address.line2}
                         onChange={(e) => handleEditFormChange('address.line2', e.target.value)}
-                        placeholder="Enter address line 2"
+                        placeholder="Enter address line 2 (optional)"
                       />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="edit_province">Province</Label>
+                        <Label htmlFor="edit_address_province">Province</Label>
                         <Select
                           value={editFormData.address.province}
                           onValueChange={(value) => handleEditFormChange('address.province', value)}
@@ -464,7 +455,7 @@ export default function UserDetailPage() {
                           </SelectTrigger>
                           <SelectContent>
                             {provincesData?.data?.map((province) => (
-                              <SelectItem key={province.province_code} value={province.province_name}>
+                              <SelectItem key={province.province_name} value={province.province_name}>
                                 {province.province_name}
                               </SelectItem>
                             ))}
@@ -473,7 +464,7 @@ export default function UserDetailPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="edit_district">District</Label>
+                        <Label htmlFor="edit_address_district">District</Label>
                         <Select
                           value={editFormData.address.district}
                           onValueChange={(value) => handleEditFormChange('address.district', value)}
@@ -484,7 +475,7 @@ export default function UserDetailPage() {
                           </SelectTrigger>
                           <SelectContent>
                             {availableDistricts.map((district) => (
-                              <SelectItem key={district.district_code} value={district.district_name}>
+                              <SelectItem key={district.district_name} value={district.district_name}>
                                 {district.district_name}
                               </SelectItem>
                             ))}
@@ -502,7 +493,7 @@ export default function UserDetailPage() {
                           Updating...
                         </>
                       ) : (
-                        'Update User'
+                        'Update Trainee'
                       )}
                     </Button>
                     <Button type="button" variant="outline" onClick={handleCancelEdit}>
@@ -519,7 +510,7 @@ export default function UserDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-xl">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-xl">
                     {user.first_name.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -528,7 +519,7 @@ export default function UserDetailPage() {
                   </div>
                 </div>
 
-                <div className="border-t border-slate-200 dark:border-slate-700 my-4" />
+              <div className="border-t border-slate-200 dark:border-slate-700 my-4" />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-2">
@@ -542,14 +533,13 @@ export default function UserDetailPage() {
                   </div>
                 )}
                 {user.address && (
-                  <div className="flex items-center gap-2">
-                    <Building className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm">
-                      {user.address.line1}
-                      {user.address.line2 && `, ${user.address.line2}`}
-                      {user.address.district && `, ${user.address.district}`}
-                      {user.address.province && `, ${user.address.province}`}
-                    </span>
+                  <div className="flex items-start gap-2">
+                    <Building className="w-4 h-4 text-slate-400 mt-0.5" />
+                    <div className="text-sm">
+                      <div>{user.address.line1}</div>
+                      {user.address.line2 && <div>{user.address.line2}</div>}
+                      <div>{user.address.district}, {user.address.province}</div>
+                    </div>
                   </div>
                 )}
                 <div className="flex items-center gap-2">
@@ -561,45 +551,35 @@ export default function UserDetailPage() {
           </Card>
           )}
 
-          {/* Role-Specific Data */}
-          {user.role === 'TRAINEE' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Training Information</CardTitle>
-              </CardHeader>
-              <CardContent>
+          {/* Training Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Dumbbell className="w-5 h-5" />
+                Training Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
                 <p className="text-slate-600 dark:text-slate-400">
-                  Training-specific data would be displayed here (specialization, assigned classes, etc.)
+                  Training-specific data would be displayed here (assigned classes, certifications, performance metrics, etc.)
                 </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {user.role === 'USER' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Member Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-slate-600 dark:text-slate-400">
-                  Member-specific data would be displayed here (bookings, workouts, etc.)
-                </p>
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Barcode Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Key className="w-5 h-5" />
-                User Access Card
+                Trainee Access Card
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <p className="text-slate-600 dark:text-slate-400">
-                  View and download the user&apos;s barcode access card for gym entry and verification.
+                  View and download the trainee&apos;s barcode access card for gym entry and verification.
                 </p>
                 <Button
                   onClick={() => setShowQRCard(true)}
@@ -613,7 +593,6 @@ export default function UserDetailPage() {
           </Card>
         </div>
 
-        {/* Admin Controls */}
         {/* Admin Controls */}
         {!isEditMode && (
           <div className="space-y-6">
@@ -682,7 +661,7 @@ export default function UserDetailPage() {
                   onClick={handleDeleteUser}
                 >
                   <Trash2 className="w-4 h-4" />
-                  Delete User
+                  Delete Trainee
                 </Button>
               </div>
             </CardContent>
@@ -695,7 +674,7 @@ export default function UserDetailPage() {
       <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Change User Role</DialogTitle>
+            <DialogTitle>Change Trainee Role</DialogTitle>
             <DialogDescription>
               Update the role for {user.first_name} {user.last_name}. This will affect their permissions in the system.
             </DialogDescription>
@@ -737,7 +716,7 @@ export default function UserDetailPage() {
       <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Change User Status</DialogTitle>
+            <DialogTitle>Change Trainee Status</DialogTitle>
             <DialogDescription>
               Update the status for {user.first_name} {user.last_name}. This will affect their access to the system.
             </DialogDescription>

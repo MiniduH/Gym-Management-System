@@ -60,26 +60,26 @@ export default function CreateUserPage() {
 
       const username = formData.email.split('@')[0] + Math.random().toString(36).substring(2, 8);
 
-      await createUser({
+      const response = await createUser({
         first_name: formData.first_name,
         last_name: formData.last_name,
         username,
         email: formData.email,
         password,
-        phone: formData.phone || undefined,
+        phone: formData.phone,
         department: formData.department || undefined,
         type: 'user', // Changed from role: 1 to type: 'user'
         // Admin-created users are auto-approved (handled on backend)
       }).unwrap();
 
-      // Create user data for QR card
+      // Use the real user data from API response
       const newUserData = {
-        id: Date.now(), // Temporary ID until we get it from API
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        username,
-        email: formData.email,
-        role: 'USER',
+        id: response.data.id,
+        first_name: response.data.first_name,
+        last_name: response.data.last_name,
+        username: response.data.username,
+        email: response.data.email,
+        role: String(response.data.role).toUpperCase(),
       };
 
       setCreatedUserData(newUserData);

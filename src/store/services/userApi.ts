@@ -14,6 +14,12 @@ export interface User {
   role: string; // Now returns string values: 'user', 'admin', 'trainer'
   status: string;
   department?: string;
+  address?: {
+    line1: string;
+    line2?: string;
+    district: string;
+    province: string;
+  };
   is_verified: boolean;
   last_login?: string;
   created_at: string;
@@ -45,11 +51,17 @@ export interface CreateUserRequest {
   first_name: string;
   last_name: string;
   username: string;
-  email: string;
+  email?: string; // Made optional
   password: string;
-  phone?: string;
-  type: 'user' | 'admin' | 'trainer'; // Changed from role to type with string values
+  phone: string; // Made required
+  type: 'user' | 'admin' | 'trainer';
   department?: string;
+  address?: {
+    line1: string;
+    line2: string;
+    district: string;
+    province: string;
+  };
 }
 
 export interface CreateUserResponse {
@@ -60,11 +72,16 @@ export interface CreateUserResponse {
 export interface UpdateUserRequest {
   first_name?: string;
   last_name?: string;
-  username?: string;
   phone?: string;
   type?: 'user' | 'admin' | 'trainer'; // Changed from role to type
   status?: 'active' | 'inactive' | 'suspended';
   department?: string;
+  address?: {
+    line1: string;
+    line2?: string;
+    district: string;
+    province: string;
+  };
 }
 
 export interface UpdateUserResponse {
@@ -91,6 +108,26 @@ export interface GetUserBarcodeResponse {
     barcodeValue: string;
     user: User;
   };
+}
+
+export interface Province {
+  id: number;
+  province_name: string;
+  province_code: string;
+  districts: District[];
+}
+
+export interface District {
+  id: number;
+  district_name: string;
+  district_code: string;
+}
+
+export interface GetProvincesResponse {
+  success: boolean;
+  message: string;
+  data: Province[];
+  count: number;
 }
 
 export const userApi = createApi({
@@ -194,6 +231,11 @@ export const userApi = createApi({
       query: (userId) => `/users/${userId}/barcode`,
       providesTags: (result, error, id) => [{ type: 'User', id }],
     }),
+
+    // Get provinces with districts
+    getProvinces: builder.query<GetProvincesResponse, {}>({
+      query: () => '/provinces',
+    }),
   }),
 });
 
@@ -209,4 +251,5 @@ export const {
   useUpdateUserMutation,
   useDeleteUserMutation,
   useGetUserBarcodeQuery,
+  useGetProvincesQuery,
 } = userApi;

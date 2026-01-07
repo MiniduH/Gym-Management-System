@@ -60,7 +60,7 @@ interface UserDetail {
   updated_at: string;
 }
 
-export default function UserDetailPage() {
+export default function AdminDetailPage() {
   const params = useParams();
   const router = useRouter();
   const userId = params.id as string;
@@ -232,17 +232,17 @@ export default function UserDetailPage() {
   const handleDeleteUser = async () => {
     if (!user) return;
 
-    if (!confirm('Are you sure you want to permanently delete this user? This action cannot be undone.')) {
+    if (!confirm('Are you sure you want to permanently delete this admin? This action cannot be undone.')) {
       return;
     }
 
     try {
       await deleteUser(user.id).unwrap();
-      toast.success('User deleted successfully');
-      router.push('/dashboard/admin/users');
+      toast.success('Admin deleted successfully');
+      router.push('/dashboard/admin/admins');
     } catch (error: any) {
-      console.error('Error deleting user:', error);
-      toast.error(error?.data?.message || 'Failed to delete user');
+      console.error('Error deleting admin:', error);
+      toast.error(error?.data?.message || 'Failed to delete admin');
     }
   };
 
@@ -251,7 +251,7 @@ export default function UserDetailPage() {
 
     try {
       // Here you would call the reset password API
-      toast.success('Password reset email sent to user');
+      toast.success('Password reset email sent to admin');
     } catch (error) {
       toast.error('Failed to reset password');
     }
@@ -316,10 +316,10 @@ export default function UserDetailPage() {
       } : null);
 
       setIsEditMode(false);
-      toast.success('User updated successfully');
+      toast.success('Admin updated successfully');
     } catch (error: any) {
-      console.error('Error updating user:', error);
-      toast.error(error?.data?.message || 'Failed to update user');
+      console.error('Error updating admin:', error);
+      toast.error(error?.data?.message || 'Failed to update admin');
     } finally {
       setIsProcessing(false);
     }
@@ -359,9 +359,9 @@ export default function UserDetailPage() {
   if (!user) {
     return (
       <div className="text-center py-12">
-        <p className="text-slate-500 dark:text-slate-400">User not found</p>
-        <Link href="/dashboard/admin/users">
-          <Button className="mt-4">Back to Users</Button>
+        <p className="text-slate-500 dark:text-slate-400">Admin not found</p>
+        <Link href="/dashboard/admin/admins">
+          <Button className="mt-4">Back to Admins</Button>
         </Link>
       </div>
     );
@@ -370,17 +370,17 @@ export default function UserDetailPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/admin/users">
+        <Link href="/dashboard/admin/admins">
           <Button variant="outline" size="icon">
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </Link>
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-            {isEditMode ? 'Edit User' : `${user.first_name} ${user.last_name}`}
+            {isEditMode ? 'Edit Admin' : `${user.first_name} ${user.last_name}`}
           </h1>
           <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1">
-            {isEditMode ? 'Update user information' : 'User Details & Management'}
+            {isEditMode ? 'Update admin information' : 'Admin Details & Management'}
           </p>
         </div>
       </div>
@@ -391,7 +391,7 @@ export default function UserDetailPage() {
           {isEditMode ? (
             <Card>
               <CardHeader>
-                <CardTitle>Edit User Information</CardTitle>
+                <CardTitle>Edit Admin Information</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleEditSubmit} className="space-y-6">
@@ -502,7 +502,7 @@ export default function UserDetailPage() {
                           Updating...
                         </>
                       ) : (
-                        'Update User'
+                        'Update Admin'
                       )}
                     </Button>
                     <Button type="button" variant="outline" onClick={handleCancelEdit}>
@@ -519,7 +519,7 @@ export default function UserDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-xl">
+                  <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-semibold text-xl">
                     {user.first_name.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -561,45 +561,30 @@ export default function UserDetailPage() {
           </Card>
           )}
 
-          {/* Role-Specific Data */}
-          {user.role === 'TRAINEE' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Training Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-slate-600 dark:text-slate-400">
-                  Training-specific data would be displayed here (specialization, assigned classes, etc.)
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {user.role === 'USER' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Member Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-slate-600 dark:text-slate-400">
-                  Member-specific data would be displayed here (bookings, workouts, etc.)
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          {/* Admin-Specific Data */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Administrative Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-slate-600 dark:text-slate-400">
+                This user has full administrative privileges and can manage all aspects of the gym management system.
+              </p>
+            </CardContent>
+          </Card>
 
           {/* Barcode Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Key className="w-5 h-5" />
-                User Access Card
+                Admin Access Card
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <p className="text-slate-600 dark:text-slate-400">
-                  View and download the user&apos;s barcode access card for gym entry and verification.
+                  View and download the admin&apos;s barcode access card for gym entry and verification.
                 </p>
                 <Button
                   onClick={() => setShowQRCard(true)}
@@ -613,7 +598,6 @@ export default function UserDetailPage() {
           </Card>
         </div>
 
-        {/* Admin Controls */}
         {/* Admin Controls */}
         {!isEditMode && (
           <div className="space-y-6">
@@ -682,7 +666,7 @@ export default function UserDetailPage() {
                   onClick={handleDeleteUser}
                 >
                   <Trash2 className="w-4 h-4" />
-                  Delete User
+                  Delete Admin
                 </Button>
               </div>
             </CardContent>
@@ -695,7 +679,7 @@ export default function UserDetailPage() {
       <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Change User Role</DialogTitle>
+            <DialogTitle>Change Admin Role</DialogTitle>
             <DialogDescription>
               Update the role for {user.first_name} {user.last_name}. This will affect their permissions in the system.
             </DialogDescription>
@@ -737,7 +721,7 @@ export default function UserDetailPage() {
       <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Change User Status</DialogTitle>
+            <DialogTitle>Change Admin Status</DialogTitle>
             <DialogDescription>
               Update the status for {user.first_name} {user.last_name}. This will affect their access to the system.
             </DialogDescription>

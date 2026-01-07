@@ -182,7 +182,7 @@ export function UsersList() {
           username,
           email: userData.email || '',
           password: userData.password || '',
-          phone: userData.phone,
+          phone: userData.phone || '',
           department: userData.department,
           type: userData.role === 'USER' ? 'user' : userData.role === 'ADMIN' ? 'admin' : userData.role === 'TRAINEE' ? 'trainer' : 'user',
         }).unwrap();
