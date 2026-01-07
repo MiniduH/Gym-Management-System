@@ -51,8 +51,10 @@ import {
   XCircle,
   AlertTriangle,
   Users,
+  QrCode,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { UserQRCard } from '@/components/users/UserQRCard';
 import Link from 'next/link';
 
 export interface User {
@@ -77,6 +79,8 @@ export default function AdminUsersPage() {
   const [mobileDisplayCount, setMobileDisplayCount] = useState(10);
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [showQRCard, setShowQRCard] = useState(false);
+  const [createdUserData, setCreatedUserData] = useState<User | null>(null);
   const [createFormData, setCreateFormData] = useState({
     first_name: '',
     last_name: '',
@@ -222,6 +226,25 @@ export default function AdminUsersPage() {
         department: createFormData.department || undefined,
         type: 'user', // Changed from role: 1 to type: 'user'
       }).unwrap();
+
+      // Create user data for QR card
+      const newUserData: User = {
+        id: Date.now(), // Temporary ID until we get it from API
+        first_name: createFormData.first_name,
+        last_name: createFormData.last_name,
+        username,
+        email: createFormData.email,
+        role: 'USER',
+        status: 'APPROVED',
+        phone: createFormData.phone || undefined,
+        department: createFormData.department || undefined,
+        is_verified: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      setCreatedUserData(newUserData);
+      setShowQRCard(true);
 
       toast.success('User created successfully!');
 
@@ -466,6 +489,13 @@ export default function AdminUsersPage() {
                               View Details
                             </Link>
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setCreatedUserData(user);
+                            setShowQRCard(true);
+                          }}>
+                            <QrCode className="w-4 h-4 mr-2" />
+                            View Barcode
+                          </DropdownMenuItem>
                           {user.status === 'PENDING' && (
                             <>
                               <DropdownMenuItem>
@@ -607,6 +637,13 @@ export default function AdminUsersPage() {
                                   View Details
                                 </Link>
                               </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => {
+                                setCreatedUserData(user);
+                                setShowQRCard(true);
+                              }}>
+                                <QrCode className="w-4 h-4 mr-2" />
+                                View Barcode
+                              </DropdownMenuItem>
                               {user.status === 'PENDING' && (
                                 <>
                                   <DropdownMenuItem>
@@ -658,6 +695,28 @@ export default function AdminUsersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* QR Card Modal */}
+      {showQRCard && createdUserData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="max-w-md w-full">
+            <UserQRCard
+              userData={{
+                id: createdUserData.id,
+                first_name: createdUserData.first_name,
+                last_name: createdUserData.last_name,
+                email: createdUserData.email,
+                role: createdUserData.role,
+                username: createdUserData.username,
+              }}
+              onClose={() => {
+                setShowQRCard(false);
+                setCreatedUserData(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -50,9 +50,11 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
+  QrCode,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { UserQRCard } from '@/components/users/UserQRCard';
 
 export interface User {
   id: number;
@@ -76,6 +78,8 @@ export default function AdminTraineesPage() {
   const [mobileDisplayCount, setMobileDisplayCount] = useState(10);
   const [isCreateDrawerOpen, setIsCreateDrawerOpen] = useState(false);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [showQRCard, setShowQRCard] = useState(false);
+  const [createdUserData, setCreatedUserData] = useState<User | null>(null);
   const [createFormData, setCreateFormData] = useState({
     first_name: '',
     last_name: '',
@@ -209,6 +213,25 @@ export default function AdminTraineesPage() {
         department: createFormData.department || undefined,
         type: 'trainer', // Changed from role: 2 to type: 'trainer'
       }).unwrap();
+
+      // Create user data for QR card
+      const newUserData: User = {
+        id: Date.now(), // Temporary ID until we get it from API
+        first_name: createFormData.first_name,
+        last_name: createFormData.last_name,
+        username,
+        email: createFormData.email,
+        role: 'TRAINEE',
+        status: 'APPROVED',
+        phone: createFormData.phone || undefined,
+        department: createFormData.department || undefined,
+        is_verified: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      setCreatedUserData(newUserData);
+      setShowQRCard(true);
 
       toast.success('Trainee created successfully!');
 
@@ -462,10 +485,17 @@ export default function AdminTraineesPage() {
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
-                            <Link href={`/dashboard/admin/users/${user.id}`}>
+                            <Link href={`/dashboard/admin/trainees/${user.id}`}>
                               <Eye className="w-4 h-4 mr-2" />
                               View Details
                             </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setCreatedUserData(user);
+                            setShowQRCard(true);
+                          }}>
+                            <QrCode className="w-4 h-4 mr-2" />
+                            View Barcode
                           </DropdownMenuItem>
                           {user.status === 'PENDING' && (
                             <>
@@ -603,10 +633,17 @@ export default function AdminTraineesPage() {
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/admin/users/${user.id}`}>
+                                <Link href={`/dashboard/admin/trainees/${user.id}`}>
                                   <Eye className="w-4 h-4 mr-2" />
                                   View Details
                                 </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => {
+                                setCreatedUserData(user);
+                                setShowQRCard(true);
+                              }}>
+                                <QrCode className="w-4 h-4 mr-2" />
+                                View Barcode
                               </DropdownMenuItem>
                               {user.status === 'PENDING' && (
                                 <>
@@ -659,6 +696,28 @@ export default function AdminTraineesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* QR Card Modal */}
+      {showQRCard && createdUserData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="max-w-md w-full">
+            <UserQRCard
+              userData={{
+                id: createdUserData.id,
+                first_name: createdUserData.first_name,
+                last_name: createdUserData.last_name,
+                email: createdUserData.email,
+                role: createdUserData.role,
+                username: createdUserData.username,
+              }}
+              onClose={() => {
+                setShowQRCard(false);
+                setCreatedUserData(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { UserQRCard } from '@/components/users/UserQRCard';
 
 interface UserDetail {
   id: number;
@@ -60,6 +61,7 @@ export default function UserDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [showQRCard, setShowQRCard] = useState(false);
   const [newRole, setNewRole] = useState('');
   const [newStatus, setNewStatus] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -297,6 +299,30 @@ export default function UserDetailPage() {
               </CardContent>
             </Card>
           )}
+
+          {/* Barcode Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Key className="w-5 h-5" />
+                User Access Card
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-slate-600 dark:text-slate-400">
+                  View and download the user&apos;s barcode access card for gym entry and verification.
+                </p>
+                <Button
+                  onClick={() => setShowQRCard(true)}
+                  className="w-full sm:w-auto gap-2"
+                >
+                  <Key className="w-4 h-4" />
+                  View Barcode
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Admin Controls */}
@@ -457,6 +483,25 @@ export default function UserDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* QR Card Modal */}
+      {showQRCard && user && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="max-w-md w-full">
+            <UserQRCard
+              userData={{
+                id: user.id,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                email: user.email,
+                role: user.role,
+                username: user.username,
+              }}
+              onClose={() => setShowQRCard(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

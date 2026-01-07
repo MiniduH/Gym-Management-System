@@ -84,6 +84,15 @@ export interface GetUserCountResponse {
   };
 }
 
+export interface GetUserBarcodeResponse {
+  success: boolean;
+  data: {
+    userId: number;
+    barcodeValue: string;
+    user: User;
+  };
+}
+
 export const userApi = createApi({
   reducerPath: 'userApi',
   baseQuery: fetchBaseQuery({
@@ -179,6 +188,12 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['User'],
     }),
+
+    // Get user barcode data
+    getUserBarcode: builder.query<GetUserBarcodeResponse, number>({
+      query: (userId) => `/users/${userId}/barcode`,
+      providesTags: (result, error, id) => [{ type: 'User', id }],
+    }),
   }),
 });
 
@@ -193,4 +208,5 @@ export const {
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
+  useGetUserBarcodeQuery,
 } = userApi;

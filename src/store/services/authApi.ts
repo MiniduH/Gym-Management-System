@@ -108,6 +108,42 @@ export interface ChangePasswordResponse {
   message: string;
 }
 
+export interface BarcodeLoginRequest {
+  userId: number;
+}
+
+export interface BarcodeLoginResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user: {
+      id: number;
+      username: string;
+      email: string;
+      first_name: string;
+      last_name: string;
+      role: string;
+      status: string;
+      phone?: string;
+      department?: string;
+      is_verified: boolean;
+      last_login?: string;
+      created_at: string;
+      updated_at: string;
+      permissions?: Array<{
+        id: number;
+        name: string;
+      }>;
+    };
+    tokens: {
+      accessToken: string;
+      refreshToken: string;
+      expiresAt: string;
+      tokenType: string;
+    };
+  };
+}
+
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
@@ -186,6 +222,15 @@ export const authApi = createApi({
         body: { userId },
       }),
     }),
+
+    // Barcode login endpoint
+    barcodeLogin: builder.mutation<BarcodeLoginResponse, BarcodeLoginRequest>({
+      query: (body) => ({
+        url: '/auth/barcode-login',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -197,4 +242,5 @@ export const {
   useLogoutMutation,
   useChangePasswordMutation,
   useLogoutAllDevicesMutation,
+  useBarcodeLoginMutation,
 } = authApi;

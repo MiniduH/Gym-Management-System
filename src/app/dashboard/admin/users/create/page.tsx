@@ -13,10 +13,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Loader2, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { UserQRCard } from '@/components/users/UserQRCard';
 
 export default function CreateUserPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showQRCard, setShowQRCard] = useState(false);
+  const [createdUserData, setCreatedUserData] = useState<any>(null);
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -69,6 +72,19 @@ export default function CreateUserPage() {
         // Admin-created users are auto-approved (handled on backend)
       }).unwrap();
 
+      // Create user data for QR card
+      const newUserData = {
+        id: Date.now(), // Temporary ID until we get it from API
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        username,
+        email: formData.email,
+        role: 'USER',
+      };
+
+      setCreatedUserData(newUserData);
+      setShowQRCard(true);
+
       toast.success('User created successfully!');
 
       // Show generated password if auto-generated
@@ -77,8 +93,6 @@ export default function CreateUserPage() {
           duration: 10000,
         });
       }
-
-      router.push('/dashboard/admin/users');
     } catch (error: any) {
       console.error('Error creating user:', error);
       toast.error(error?.data?.message || 'Failed to create user');
@@ -217,6 +231,22 @@ export default function CreateUserPage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* QR Card Modal */}
+      {showQRCard && createdUserData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="max-w-md w-full">
+            <UserQRCard
+              userData={createdUserData}
+              onClose={() => {
+                setShowQRCard(false);
+                setCreatedUserData(null);
+                router.push('/dashboard/admin/users');
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
