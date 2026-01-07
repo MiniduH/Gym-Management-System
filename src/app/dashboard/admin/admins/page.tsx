@@ -53,6 +53,7 @@ import {
   AlertTriangle,
   Shield,
   QrCode,
+  MapPin,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { UserQRCard } from '@/components/users/UserQRCard';
@@ -68,6 +69,12 @@ export interface User {
   status: string;
   phone?: string;
   department?: string;
+  address?: {
+    line1: string;
+    line2?: string;
+    district: string;
+    province: string;
+  };
   is_verified: boolean;
   created_at: string;
   updated_at: string;
@@ -143,6 +150,7 @@ export default function AdminAdminsPage() {
         status: user.status.toUpperCase(),
         phone: user.phone,
         department: user.department,
+        address: user.address,
         is_verified: user.is_verified,
         created_at: user.created_at,
         updated_at: user.updated_at,
@@ -161,7 +169,7 @@ export default function AdminAdminsPage() {
         .includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.department?.toLowerCase().includes(searchTerm.toLowerCase());
+      user.address?.district?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
 
@@ -707,10 +715,10 @@ export default function AdminAdminsPage() {
                         {getStatusIcon(user.status)}
                         {user.status}
                       </Badge>
-                      {user.department && (
+                      {user.address?.district && (
                         <span className="flex items-center gap-1 text-xs text-slate-500">
-                          <Building className="w-3 h-3" />
-                          {user.department}
+                          <MapPin className="w-3 h-3" />
+                          {user.address.district}
                         </span>
                       )}
                     </div>
@@ -747,7 +755,7 @@ export default function AdminAdminsPage() {
                     <TableRow>
                       <TableHead>Admin</TableHead>
                       <TableHead>Role</TableHead>
-                      <TableHead>Department</TableHead>
+                      <TableHead>District</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Created</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -778,7 +786,7 @@ export default function AdminAdminsPage() {
                         </TableCell>
                         <TableCell>
                           <span className="text-slate-600 dark:text-slate-400">
-                            {user.department || '-'}
+                            {user.address?.district || '-'}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -814,10 +822,6 @@ export default function AdminAdminsPage() {
                               }}>
                                 <QrCode className="w-4 h-4 mr-2" />
                                 View Barcode
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Pencil className="w-4 h-4 mr-2" />
-                                Edit Admin
                               </DropdownMenuItem>
                               {user.status === 'PENDING' && (
                                 <>
