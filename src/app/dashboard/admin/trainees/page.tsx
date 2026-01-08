@@ -643,68 +643,73 @@ export default function AdminTraineesPage() {
                           </div>
                         </div>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="flex-shrink-0">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem asChild>
-                            <Link href={`/dashboard/admin/trainees/${user.id}`}>
-                              <Eye className="w-4 h-4 mr-2" />
-                              View Details
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => {
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
                             setCreatedUserData(user);
                             setShowQRCard(true);
-                          }}>
-                            <QrCode className="w-4 h-4 mr-2" />
-                            View Barcode
-                          </DropdownMenuItem>
-                          {user.status === 'PENDING' && (
-                            <>
-                              <DropdownMenuItem>
-                                <UserCheck className="w-4 h-4 mr-2" />
-                                Approve
-                              </DropdownMenuItem>
+                          }}
+                          title="View Barcode"
+                        >
+                          <QrCode className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" asChild title="View Details">
+                          <Link href={`/dashboard/admin/trainees/${user.id}`}>
+                            <Eye className="w-4 h-4" />
+                          </Link>
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {user.status === 'PENDING' && (
+                              <>
+                                <DropdownMenuItem>
+                                  <UserCheck className="w-4 h-4 mr-2" />
+                                  Approve
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <UserX className="w-4 h-4 mr-2" />
+                                  Reject
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            {user.status === 'APPROVED' && (
                               <DropdownMenuItem>
                                 <UserX className="w-4 h-4 mr-2" />
-                                Reject
+                                Suspend
                               </DropdownMenuItem>
-                            </>
-                          )}
-                          {user.status === 'APPROVED' && (
-                            <DropdownMenuItem>
-                              <UserX className="w-4 h-4 mr-2" />
-                              Suspend
+                            )}
+                            {user.status === 'SUSPENDED' && (
+                              <DropdownMenuItem>
+                                <UserCheck className="w-4 h-4 mr-2" />
+                                Activate
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild>
+                              <Link href={`/dashboard/admin/trainees/${user.id}?edit=true`}>
+                                <Pencil className="w-4 h-4 mr-2" />
+                                Edit Trainee
+                              </Link>
                             </DropdownMenuItem>
-                          )}
-                          {user.status === 'SUSPENDED' && (
-                            <DropdownMenuItem>
-                              <UserCheck className="w-4 h-4 mr-2" />
-                              Activate
+                            <DropdownMenuItem
+                              className="text-red-600 focus:text-red-600"
+                              onClick={() => handleDeleteUser(user.id, `${user.first_name} ${user.last_name}`)}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete Trainee
                             </DropdownMenuItem>
-                          )}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem asChild>
-                            <Link href={`/dashboard/admin/trainees/${user.id}?edit=true`}>
-                              <Pencil className="w-4 h-4 mr-2" />
-                              Edit Trainee
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-red-600 focus:text-red-600"
-                            onClick={() => handleDeleteUser(user.id, `${user.first_name} ${user.last_name}`)}
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete Trainee
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                     <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-2">
                       <Badge variant="secondary" className="text-xs">
@@ -800,68 +805,73 @@ export default function AdminTraineesPage() {
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/admin/trainees/${user.id}`}>
-                                  <Eye className="w-4 h-4 mr-2" />
-                                  View Details
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => {
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
                                 setCreatedUserData(user);
                                 setShowQRCard(true);
-                              }}>
-                                <QrCode className="w-4 h-4 mr-2" />
-                                View Barcode
-                              </DropdownMenuItem>
-                              {user.status === 'PENDING' && (
-                                <>
-                                  <DropdownMenuItem>
-                                    <UserCheck className="w-4 h-4 mr-2" />
-                                    Approve
-                                  </DropdownMenuItem>
+                              }}
+                              title="View Barcode"
+                            >
+                              <QrCode className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" asChild title="View Details">
+                              <Link href={`/dashboard/admin/trainees/${user.id}`}>
+                                <Eye className="w-4 h-4" />
+                              </Link>
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <MoreHorizontal className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {user.status === 'PENDING' && (
+                                  <>
+                                    <DropdownMenuItem>
+                                      <UserCheck className="w-4 h-4 mr-2" />
+                                      Approve
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                      <UserX className="w-4 h-4 mr-2" />
+                                      Reject
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                                {user.status === 'APPROVED' && (
                                   <DropdownMenuItem>
                                     <UserX className="w-4 h-4 mr-2" />
-                                    Reject
+                                    Suspend
                                   </DropdownMenuItem>
-                                </>
-                              )}
-                              {user.status === 'APPROVED' && (
-                                <DropdownMenuItem>
-                                  <UserX className="w-4 h-4 mr-2" />
-                                  Suspend
+                                )}
+                                {user.status === 'SUSPENDED' && (
+                                  <DropdownMenuItem>
+                                    <UserCheck className="w-4 h-4 mr-2" />
+                                    Activate
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/dashboard/admin/trainees/${user.id}?edit=true`}>
+                                    <Pencil className="w-4 h-4 mr-2" />
+                                    Edit Trainee
+                                  </Link>
                                 </DropdownMenuItem>
-                              )}
-                              {user.status === 'SUSPENDED' && (
-                                <DropdownMenuItem>
-                                  <UserCheck className="w-4 h-4 mr-2" />
-                                  Activate
+                                <DropdownMenuItem
+                                  className="text-red-600 focus:text-red-600"
+                                  onClick={() => handleDeleteUser(user.id, `${user.first_name} ${user.last_name}`)}
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Delete Trainee
                                 </DropdownMenuItem>
-                              )}
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/admin/trainees/${user.id}?edit=true`}>
-                                  <Pencil className="w-4 h-4 mr-2" />
-                                  Edit Trainee
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                className="text-red-600 focus:text-red-600"
-                                onClick={() => handleDeleteUser(user.id, `${user.first_name} ${user.last_name}`)}
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Delete Trainee
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

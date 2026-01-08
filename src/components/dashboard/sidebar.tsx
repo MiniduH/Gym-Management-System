@@ -17,6 +17,7 @@ import {
   Shield,
   Cog,
   UserCheck,
+  ChevronDown,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -35,14 +36,25 @@ const adminMenuItems = [
     href: '/dashboard/admin',
   },
   {
-    title: 'Users',
+    title: 'Access Control',
     icon: Users,
-    href: '/dashboard/admin/users',
-  },
-  {
-    title: 'Trainers',
-    icon: UserCheck,
-    href: '/dashboard/admin/trainees',
+    submenu: [
+      {
+        title: 'Users',
+        icon: Users,
+        href: '/dashboard/admin/users',
+      },
+      {
+        title: 'Trainers',
+        icon: UserCheck,
+        href: '/dashboard/admin/trainees',
+      },
+      {
+        title: 'Admin',
+        icon: Shield,
+        href: '/dashboard/admin/admins',
+      },
+    ],
   },
   {
     title: 'Settings',
@@ -59,6 +71,7 @@ const adminMenuItems = [
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch();
@@ -163,10 +176,107 @@ export function Sidebar() {
       </div>
 
       <nav className={cn('flex-1 space-y-2', isCollapsed && !isMobileOpen ? 'p-2' : 'p-4')}>
-        {menuItems.map((item) => {
+        {menuItems.map((item: any) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
-          return (
+          const hasSubmenu = item.submenu && item.submenu.length > 0;
+          const isExpanded = expandedMenus.includes(item.title);
+
+          // Check if any submenu item is active
+          const isSubmenuActive = hasSubmenu && item.submenu.some((subitem: any) => pathname === subitem.href);
+
+          if (hasSubmenu) {
+            return (
+              <div key={item.title} className="relative group">
+                <button
+                  onClick={() => {
+                    if (!isCollapsed || isMobileOpen) {
+                      setExpandedMenus(prev =>
+                        prev.includes(item.title)
+                          ? prev.filter(t => t !== item.title)
+                          : [...prev, item.title]
+                      );
+                    }
+                  }}
+                  title={isCollapsed && !isMobileOpen ? item.title : undefined}
+                  className={cn(
+                    'w-full flex items-center rounded-lg transition-colors',
+                    isCollapsed && !isMobileOpen ? 'justify-center px-2 py-3' : 'gap-3 px-4 py-3',
+                    isSubmenuActive
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                  )}
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  {(!isCollapsed || isMobileOpen) && (
+                    <>
+                      <span className="font-medium flex-1 text-left">{item.title}</span>
+                      <ChevronDown
+                        className={cn(
+                          'w-4 h-4 transition-transform',
+                          isExpanded ? 'rotate-180' : ''
+                        )}
+                      />
+                    </>
+                  )}
+                </button>
+
+                {/* Hover tooltip for collapsed sidebar */}
+                {isCollapsed && !isMobileOpen && (
+                  <div className="absolute left-full top-0 ml-2 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-auto">
+                    <div className="bg-slate-900 dark:bg-slate-700 text-white rounded-lg shadow-lg p-3 min-w-[200px]">
+                      <div className="font-medium text-sm mb-2 text-slate-200">{item.title}</div>
+                      <div className="space-y-1">
+                        {item.submenu.map((subitem: any) => {
+                          const SubIcon = subitem.icon;
+                          const isSubActive = pathname === subitem.href;
+                          return (
+                            <Link
+                              key={subitem.href}
+                              href={subitem.href}
+                              className={cn(
+                                'flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sm hover:bg-slate-800 dark:hover:bg-slate-600',
+                                isSubActive
+                                  ? 'bg-slate-600 text-slate-100'
+                                  : 'text-slate-300 hover:text-white'
+                              )}
+                            >
+                              <SubIcon className="w-4 h-4 flex-shrink-0" />
+                              <span className="font-medium">{subitem.title}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {isExpanded && (!isCollapsed || isMobileOpen) && (
+                  <div className="ml-4 mt-1 space-y-1 border-l border-slate-200 dark:border-slate-700 pl-3">
+                    {item.submenu.map((subitem: any) => {
+                      const SubIcon = subitem.icon;
+                      const isSubActive = pathname === subitem.href;
+                      return (
+                        <Link
+                          key={subitem.href}
+                          href={subitem.href}
+                          className={cn(
+                            'flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm',
+                            isSubActive
+                              ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-slate-100'
+                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
+                          )}
+                        >
+                          <SubIcon className="w-4 h-4 flex-shrink-0" />
+                          <span className="font-medium">{subitem.title}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }          return (
             <Link
               key={item.href}
               href={item.href}
