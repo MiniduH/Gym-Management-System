@@ -84,10 +84,10 @@ export function PWAInstallPrompt() {
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white font-bold">
-                TMS
+                Gym
               </div>
               <div>
-                <CardTitle className="text-lg">Install TMS Portal</CardTitle>
+                <CardTitle className="text-lg">Install Gym Portal</CardTitle>
                 <CardDescription>Add to home screen for quick access</CardDescription>
               </div>
             </div>

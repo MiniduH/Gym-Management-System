@@ -58,6 +58,7 @@ import {
 import { toast } from 'sonner';
 import { UserQRCard } from '@/components/users/UserQRCard';
 import Link from 'next/link';
+import { CreateUserForm } from '@/components/CreateUserForm';
 
 export interface User {
   id: number;
@@ -260,7 +261,7 @@ export default function AdminUsersPage() {
     }
   }, [autoGeneratePassword]);
 
-  const handleCreateUser = async (e: React.FormEvent) => {
+  const handleCreateUser = async (e: React.FormEvent, type: 'user' | 'admin' | 'trainer' = 'user') => {
     e.preventDefault();
 
     if (!createFormData.first_name || !createFormData.last_name || !createFormData.phone) {
@@ -283,7 +284,7 @@ export default function AdminUsersPage() {
         phone: createFormData.phone,
         department: createFormData.department || undefined,
         address: createFormData.address.line1 || createFormData.address.line2 || createFormData.address.province || createFormData.address.district ? createFormData.address : undefined,
-        type: 'user',
+        type,
       }).unwrap();
 
       // Use the real user data from API response
@@ -380,201 +381,24 @@ export default function AdminUsersPage() {
                 Create a new regular user account
               </SheetDescription>
             </SheetHeader>
-            <div className="mt-6">
-              <form onSubmit={handleCreateUser} className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="create_first_name">First Name *</Label>
-                    <Input
-                      id="create_first_name"
-                      value={createFormData.first_name}
-                      onChange={(e) => handleCreateFormChange('first_name', e.target.value)}
-                      placeholder="Enter first name"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="create_last_name">Last Name *</Label>
-                    <Input
-                      id="create_last_name"
-                      value={createFormData.last_name}
-                      onChange={(e) => handleCreateFormChange('last_name', e.target.value)}
-                      placeholder="Enter last name"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="create_email">Email Address</Label>
-                  <Input
-                    id="create_email"
-                    type="email"
-                    value={createFormData.email}
-                    onChange={(e) => handleCreateFormChange('email', e.target.value)}
-                    placeholder="Enter email address (optional)"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="create_phone">Phone Number *</Label>
-                  <Input
-                    id="create_phone"
-                    value={createFormData.phone}
-                    onChange={(e) => handleCreateFormChange('phone', e.target.value)}
-                    placeholder="Enter phone number"
-                    required
-                  />
-                </div>
-
-                {/* Address Fields */}
-                <div className="space-y-4">
-                  <Label>Address</Label>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="create_address_line1">Line 1</Label>
-                    <Input
-                      id="create_address_line1"
-                      value={createFormData.address.line1}
-                      onChange={(e) => handleCreateFormChange('address.line1', e.target.value)}
-                      placeholder="Street address"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="create_address_line2">Line 2</Label>
-                    <Input
-                      id="create_address_line2"
-                      value={createFormData.address.line2}
-                      onChange={(e) => handleCreateFormChange('address.line2', e.target.value)}
-                      placeholder="Apartment, suite, etc."
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="create_province">Province</Label>
-                      <Select
-                        value={createFormData.address.province}
-                        onValueChange={(value) => handleCreateFormChange('address.province', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select province" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {provincesData?.data?.map((province: any) => (
-                            <SelectItem key={province.id} value={province.province_name}>
-                              {province.province_name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="create_district">District</Label>
-                      <Select
-                        value={createFormData.address.district}
-                        onValueChange={(value) => handleCreateFormChange('address.district', value)}
-                        disabled={!createFormData.address.province}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select district" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {provincesData?.data
-                            ?.find((province: any) => province.province_name === createFormData.address.province)
-                            ?.districts.map((district: any) => (
-                              <SelectItem key={district.id} value={district.district_name}>
-                                {district.district_name}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* <div className="space-y-2">
-                  <Label htmlFor="create_department">Department</Label>
-                  <Input
-                    id="create_department"
-                    value={createFormData.department}
-                    onChange={(e) => handleCreateFormChange('department', e.target.value)}
-                    placeholder="Enter department"
-                  />
-                </div> */}
-
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="autoGenerate"
-                      checked={autoGeneratePassword}
-                      onCheckedChange={(checked) => setAutoGeneratePassword(checked as boolean)}
-                    />
-                    <Label htmlFor="autoGenerate">Auto-generate password</Label>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="create_password">Password *</Label>
-                    <div className="relative">
-                      <Input
-                        id="create_password"
-                        type={showPassword ? "text" : "password"}
-                        value={createFormData.password}
-                        onChange={(e) => handleCreateFormChange('password', e.target.value)}
-                        placeholder={autoGeneratePassword ? "Auto-generated password" : "Enter password"}
-                        required
-                        disabled={autoGeneratePassword}
-                        className={autoGeneratePassword ? "pr-10 bg-slate-50" : "pr-10"}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4 text-slate-400" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-slate-400" />
-                        )}
-                      </Button>
-                    </div>
-                    {autoGeneratePassword && (
-                      <p className="text-xs text-slate-500">
-                        Password will be automatically generated and displayed above
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                  <Button type="submit" disabled={isCreatingUser} className="flex-1">
-                    {isCreatingUser ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Creating User...
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create User
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsCreateDrawerOpen(false)}
-                    className="w-full sm:w-auto"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </div>
+            <form onSubmit={handleCreateUser} className="mt-6 space-y-6">
+              <CreateUserForm
+                formData={createFormData}
+                onFormChange={handleCreateFormChange}
+                onSubmit={handleCreateUser}
+                isLoading={isCreatingUser}
+                provincesData={provincesData}
+                autoGeneratePassword={autoGeneratePassword}
+                setAutoGeneratePassword={setAutoGeneratePassword}
+                showPassword={showPassword}
+                setShowPassword={setShowPassword}
+                onCancel={() => setIsCreateDrawerOpen(false)}
+                buttonText="Create User"
+                userType="user"
+                showDepartment={false}
+                includeForm={false}
+              />
+            </form>
           </SheetContent>
         </Sheet>
       </div>
