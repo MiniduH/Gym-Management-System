@@ -47,6 +47,7 @@ export default function AdminDashboard() {
     password: '',
     phone: '',
     department: '',
+    specialization: '',
     address: {
       line1: '',
       line2: '',
@@ -140,6 +141,7 @@ export default function AdminDashboard() {
         password: '',
         phone: '',
         department: '',
+        specialization: '',
         address: {
           line1: '',
           line2: '',
@@ -165,6 +167,7 @@ export default function AdminDashboard() {
       password: '',
       phone: '',
       department: '',
+      specialization: '',
       address: {
         line1: '',
         line2: '',
@@ -483,106 +486,23 @@ export default function AdminDashboard() {
                     Create New Trainer
                   </DialogTitle>
                 </DialogHeader>
-                <form onSubmit={(e) => handleSubmit(e, 'trainer')} className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="trainer_first_name">First Name *</Label>
-                      <Input
-                        id="trainer_first_name"
-                        value={formData.first_name}
-                        onChange={(e) => handleInputChange('first_name', e.target.value)}
-                        placeholder="Enter first name"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="trainer_last_name">Last Name *</Label>
-                      <Input
-                        id="trainer_last_name"
-                        value={formData.last_name}
-                        onChange={(e) => handleInputChange('last_name', e.target.value)}
-                        placeholder="Enter last name"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="trainer_email">Email Address *</Label>
-                    <Input
-                      id="trainer_email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      placeholder="Enter email address"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="trainer_phone">Phone Number</Label>
-                    <Input
-                      id="trainer_phone"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="trainer_department">Department</Label>
-                    <Input
-                      id="trainer_department"
-                      value={formData.department}
-                      onChange={(e) => handleInputChange('department', e.target.value)}
-                      placeholder="Enter department"
-                    />
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="trainer_autoGenerate"
-                        checked={autoGeneratePassword}
-                        onCheckedChange={(checked) => setAutoGeneratePassword(checked as boolean)}
-                      />
-                      <Label htmlFor="trainer_autoGenerate">Auto-generate password</Label>
-                    </div>
-
-                    {!autoGeneratePassword && (
-                      <div className="space-y-2">
-                        <Label htmlFor="trainer_password">Password *</Label>
-                        <Input
-                          id="trainer_password"
-                          type="password"
-                          value={formData.password}
-                          onChange={(e) => handleInputChange('password', e.target.value)}
-                          placeholder="Enter password"
-                          required={!autoGeneratePassword}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                    <Button type="submit" disabled={isLoading} className="flex-1">
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Creating Trainer...
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="w-4 h-4 mr-2" />
-                          Create Trainer
-                        </>
-                      )}
-                    </Button>
-                    <Button type="button" variant="outline" onClick={() => setIsCreateTrainerOpen(false)} className="w-full sm:w-auto">
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
+                <CreateUserForm
+                  formData={formData}
+                  onFormChange={handleInputChange}
+                  onSubmit={(e) => handleSubmit(e, 'trainer')}
+                  isLoading={isLoading}
+                  provincesData={provincesData}
+                  autoGeneratePassword={autoGeneratePassword}
+                  setAutoGeneratePassword={setAutoGeneratePassword}
+                  showPassword={showPassword}
+                  setShowPassword={setShowPassword}
+                  onCancel={() => setIsCreateTrainerOpen(false)}
+                  buttonText="Create Trainer"
+                  userType="trainer"
+                  showDepartment={true}
+                  emailRequired={true}
+                  includeForm={true}
+                />
               </DialogContent>
             </Dialog>
             <Link href="/dashboard/admin/users">

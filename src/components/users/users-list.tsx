@@ -166,7 +166,6 @@ export function UsersList() {
           data: {
             first_name: userData.first_name,
             last_name: userData.last_name,
-            username: userData.username,
             phone: userData.phone,
             department: userData.department,
             type: userData.role === 'USER' ? 'user' : userData.role === 'ADMIN' ? 'admin' : userData.role === 'TRAINEE' ? 'trainer' : 'user',

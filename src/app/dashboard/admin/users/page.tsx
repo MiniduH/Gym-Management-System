@@ -261,7 +261,7 @@ export default function AdminUsersPage() {
     }
   }, [autoGeneratePassword]);
 
-  const handleCreateUser = async (e: React.FormEvent, type: 'user' | 'admin' | 'trainer' = 'user') => {
+  const handleCreateUser = async (e: React.FormEvent, type: 'user' | 'admin' | 'trainer' | 'trainee' = 'user') => {
     e.preventDefault();
 
     if (!createFormData.first_name || !createFormData.last_name || !createFormData.phone) {
@@ -272,6 +272,7 @@ export default function AdminUsersPage() {
     setIsCreatingUser(true);
 
     try {
+      const apiType = type === 'trainee' ? 'trainer' : type;
       const password = autoGeneratePassword ? generatePassword() : createFormData.password;
       const username = (createFormData.email || createFormData.first_name.toLowerCase()) + Math.random().toString(36).substring(2, 8);
 
@@ -284,7 +285,7 @@ export default function AdminUsersPage() {
         phone: createFormData.phone,
         department: createFormData.department || undefined,
         address: createFormData.address.line1 || createFormData.address.line2 || createFormData.address.province || createFormData.address.district ? createFormData.address : undefined,
-        type,
+        type: apiType,
       }).unwrap();
 
       // Use the real user data from API response

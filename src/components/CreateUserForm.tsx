@@ -15,6 +15,7 @@ interface CreateUserFormProps {
     password: string;
     phone: string;
     department: string;
+    specialization?: string;
     address: {
       line1: string;
       line2: string;
@@ -23,7 +24,7 @@ interface CreateUserFormProps {
     };
   };
   onFormChange: (field: string, value: string) => void;
-  onSubmit: (e: React.FormEvent, type?: 'user' | 'admin' | 'trainer') => void;
+  onSubmit: (e: React.FormEvent, type?: 'user' | 'admin' | 'trainer' | 'trainee') => void;
   isLoading: boolean;
   provincesData: any;
   autoGeneratePassword: boolean;
@@ -32,8 +33,10 @@ interface CreateUserFormProps {
   setShowPassword: (show: boolean) => void;
   onCancel?: () => void;
   buttonText?: string;
-  userType?: 'user' | 'admin' | 'trainer';
+  userType?: 'user' | 'admin' | 'trainer' | 'trainee';
   showDepartment?: boolean;
+  showSpecialization?: boolean;
+  emailRequired?: boolean;
   includeForm?: boolean;
 }
 
@@ -51,6 +54,8 @@ export function CreateUserForm({
   buttonText = "Create User",
   userType = "user",
   showDepartment = false,
+  showSpecialization = false,
+  emailRequired = false,
   includeForm = true,
 }: CreateUserFormProps) {
   const fields = (
@@ -79,13 +84,14 @@ export function CreateUserForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="create_email">Email Address</Label>
+        <Label htmlFor="create_email">Email Address{emailRequired ? ' *' : ''}</Label>
         <Input
           id="create_email"
           type="email"
           value={formData.email}
           onChange={(e) => onFormChange('email', e.target.value)}
-          placeholder="Enter email address (optional)"
+          placeholder={emailRequired ? "Enter email address" : "Enter email address (optional)"}
+          required={emailRequired}
         />
       </div>
 
@@ -99,6 +105,18 @@ export function CreateUserForm({
           required
         />
       </div>
+
+      {showSpecialization && (
+        <div className="space-y-2">
+          <Label htmlFor="create_specialization">Specialization</Label>
+          <Input
+            id="create_specialization"
+            value={formData.specialization || ''}
+            onChange={(e) => onFormChange('specialization', e.target.value)}
+            placeholder="e.g., Personal Training, Nutrition, Yoga"
+          />
+        </div>
+      )}
 
       <div className="space-y-4">
         <Label>Address</Label>
@@ -229,7 +247,7 @@ export function CreateUserForm({
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Creating User...
+              {userType === 'trainee' ? 'Creating Trainee...' : userType === 'trainer' ? 'Creating Trainer...' : 'Creating User...'}
             </>
           ) : (
             <>
