@@ -18,6 +18,7 @@ import {
   Cog,
   UserCheck,
   ChevronDown,
+  Calendar,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -55,6 +56,11 @@ const adminMenuItems = [
         href: '/dashboard/admin/admins',
       },
     ],
+  },
+  {
+    title: 'Appointments',
+    icon: Calendar,
+    href: '/dashboard/appointments',
   },
   {
     title: 'Settings',
